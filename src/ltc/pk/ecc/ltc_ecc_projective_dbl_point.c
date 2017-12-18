@@ -7,9 +7,6 @@
  * guarantee it works.
  */
 
-/* Implements ECC over Z/pZ for curve y^2 = x^3 + a*x + b
- *
- */
 #include "tomcrypt.h"
 
 /* ### Point doubling in Jacobian coordinate system ###
@@ -26,8 +23,6 @@
  * T = Yp^4
  * S = 4 * Xp * Yp^2
  *
- * SPECIAL CASE: when a == -3 we can compute M as
- * M = 3 * (Xp^2 - Zp^4) = 3 * (Xp + Zp^2) * (Xp - Zp^2)
  */
 
 /**
@@ -41,12 +36,12 @@
    Double an ECC point
    @param P   The point to double
    @param R   [out] The destination of the double
-   @param ma  ECC curve parameter a in montgomery form (if NULL we assume a == -3)
+   @param ma  ECC curve parameter a in montgomery form
    @param modulus  The modulus of the field the ECC curve is in
    @param mp       The "b" value from montgomery_setup()
    @return CRYPT_OK on success
 */
-int ltc_ecc_projective_dbl_point(ecc_point *P, ecc_point *R, void *ma, void *modulus, void *mp)
+int ltc_ecc_projective_dbl_point(const ecc_point *P, ecc_point *R, void *ma, void *modulus, void *mp)
 {
    void *t1, *t2;
    int   err;
@@ -86,56 +81,29 @@ int ltc_ecc_projective_dbl_point(ecc_point *P, ecc_point *R, void *ma, void *mod
       if ((err = mp_sub(R->z, modulus, R->z)) != CRYPT_OK)                        { goto done; }
    }
 
-   if (ma == NULL) { /* special case for ma == -3 (slightly faster than general case) */
-      /* T2 = X - T1 */
-      if ((err = mp_sub(R->x, t1, t2)) != CRYPT_OK)                               { goto done; }
-      if (mp_cmp_d(t2, 0) == LTC_MP_LT) {
-         if ((err = mp_add(t2, modulus, t2)) != CRYPT_OK)                         { goto done; }
-      }
-      /* T1 = X + T1 */
-      if ((err = mp_add(t1, R->x, t1)) != CRYPT_OK)                               { goto done; }
-      if (mp_cmp(t1, modulus) != LTC_MP_LT) {
-         if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                         { goto done; }
-      }
-      /* T2 = T1 * T2 */
-      if ((err = mp_mul(t1, t2, t2)) != CRYPT_OK)                                 { goto done; }
-      if ((err = mp_montgomery_reduce(t2, modulus, mp)) != CRYPT_OK)              { goto done; }
-      /* T1 = 2T2 */
-      if ((err = mp_add(t2, t2, t1)) != CRYPT_OK)                                 { goto done; }
-      if (mp_cmp(t1, modulus) != LTC_MP_LT) {
-         if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                         { goto done; }
-      }
-      /* T1 = T1 + T2 */
-      if ((err = mp_add(t1, t2, t1)) != CRYPT_OK)                                 { goto done; }
-      if (mp_cmp(t1, modulus) != LTC_MP_LT) {
-         if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                         { goto done; }
-      }
+   /* T2 = T1 * T1 */
+   if ((err = mp_sqr(t1, t2)) != CRYPT_OK)                                        { goto done; }
+   if ((err = mp_montgomery_reduce(t2, modulus, mp)) != CRYPT_OK)                 { goto done; }
+   /* T1 = T2 * a */
+   if ((err = mp_mul(t2, ma, t1)) != CRYPT_OK)                                    { goto done; }
+   if ((err = mp_montgomery_reduce(t1, modulus, mp)) != CRYPT_OK)                 { goto done; }
+   /* T2 = X * X */
+   if ((err = mp_sqr(R->x, t2)) != CRYPT_OK)                                      { goto done; }
+   if ((err = mp_montgomery_reduce(t2, modulus, mp)) != CRYPT_OK)                 { goto done; }
+   /* T1 = T2 + T1 */
+   if ((err = mp_add(t1, t2, t1)) != CRYPT_OK)                                    { goto done; }
+   if (mp_cmp(t1, modulus) != LTC_MP_LT) {
+      if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                            { goto done; }
    }
-   else {
-      /* T2 = T1 * T1 */
-      if ((err = mp_sqr(t1, t2)) != CRYPT_OK)                                     { goto done; }
-      if ((err = mp_montgomery_reduce(t2, modulus, mp)) != CRYPT_OK)              { goto done; }
-      /* T1 = T2 * a */
-      if ((err = mp_mul(t2, ma, t1)) != CRYPT_OK)                                 { goto done; }
-      if ((err = mp_montgomery_reduce(t1, modulus, mp)) != CRYPT_OK)              { goto done; }
-      /* T2 = X * X */
-      if ((err = mp_sqr(R->x, t2)) != CRYPT_OK)                                   { goto done; }
-      if ((err = mp_montgomery_reduce(t2, modulus, mp)) != CRYPT_OK)              { goto done; }
-      /* T1 = T2 + T1 */
-      if ((err = mp_add(t1, t2, t1)) != CRYPT_OK)                                 { goto done; }
-      if (mp_cmp(t1, modulus) != LTC_MP_LT) {
-         if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                         { goto done; }
-      }
-      /* T1 = T2 + T1 */
-      if ((err = mp_add(t1, t2, t1)) != CRYPT_OK)                                 { goto done; }
-      if (mp_cmp(t1, modulus) != LTC_MP_LT) {
-         if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                         { goto done; }
-      }
-      /* T1 = T2 + T1 */
-      if ((err = mp_add(t1, t2, t1)) != CRYPT_OK)                                 { goto done; }
-      if (mp_cmp(t1, modulus) != LTC_MP_LT) {
-         if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                         { goto done; }
-      }
+   /* T1 = T2 + T1 */
+   if ((err = mp_add(t1, t2, t1)) != CRYPT_OK)                                    { goto done; }
+   if (mp_cmp(t1, modulus) != LTC_MP_LT) {
+      if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                            { goto done; }
+   }
+   /* T1 = T2 + T1 */
+   if ((err = mp_add(t1, t2, t1)) != CRYPT_OK)                                    { goto done; }
+   if (mp_cmp(t1, modulus) != LTC_MP_LT) {
+      if ((err = mp_sub(t1, modulus, t1)) != CRYPT_OK)                            { goto done; }
    }
 
    /* Y = 2Y */
@@ -188,7 +156,7 @@ int ltc_ecc_projective_dbl_point(ecc_point *P, ecc_point *R, void *ma, void *mod
 
    err = CRYPT_OK;
 done:
-   mp_clear_multi(t1, t2, NULL);
+   mp_clear_multi(t2, t1, NULL);
    return err;
 }
 #endif

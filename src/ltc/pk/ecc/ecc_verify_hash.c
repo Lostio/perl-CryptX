@@ -7,10 +7,6 @@
  * guarantee it works.
  */
 
-/* Implements ECC over Z/pZ for curve y^2 = x^3 + a*x + b
- *
- */
-
 #include "tomcrypt.h"
 
 #ifdef LTC_MECC
@@ -20,9 +16,9 @@
   ECC Crypto, Tom St Denis
 */
 
-static int ecc_verify_hash_ex(const unsigned char *sig,  unsigned long siglen,
-                              const unsigned char *hash, unsigned long hashlen,
-                              int *stat, ecc_key *key, int sigformat)
+static int _ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
+                            const unsigned char *hash, unsigned long hashlen,
+                            int *stat, ecc_key *key, int sigformat)
 {
    ecc_point    *mG, *mQ;
    void          *r, *s, *v, *w, *u1, *u2, *e, *p, *m, *a, *mu, *ma;
@@ -40,15 +36,14 @@ static int ecc_verify_hash_ex(const unsigned char *sig,  unsigned long siglen,
    *stat = 0;
    mp    = NULL;
 
-   /* is the IDX valid ?  */
-   if (ltc_ecc_is_valid_idx(key->idx) != 1) {
-      return CRYPT_PK_INVALID_TYPE;
-   }
-
    /* allocate ints */
-   if ((err = mp_init_multi(&r, &s, &v, &w, &u1, &u2, &p, &e, &m, &a, &mu, &ma, NULL)) != CRYPT_OK) {
+   if ((err = mp_init_multi(&r, &s, &v, &w, &u1, &u2, &e, &mu, &ma, NULL)) != CRYPT_OK) {
       return CRYPT_MEM;
    }
+
+   p = key->dp.order;
+   m = key->dp.prime;
+   a = key->dp.A;
 
    /* allocate points */
    mG = ltc_ecc_new_point();
@@ -76,17 +71,9 @@ static int ecc_verify_hash_ex(const unsigned char *sig,  unsigned long siglen,
                                      LTC_ASN1_EOL, 0UL, NULL)) != CRYPT_OK)                             { goto error; }
    }
 
-   /* get the order */
-   if ((err = mp_read_radix(p, (char *)key->dp->order, 16)) != CRYPT_OK)                                { goto error; }
-
-   /* get the modulus */
-   if ((err = mp_read_radix(m, (char *)key->dp->prime, 16)) != CRYPT_OK)                                { goto error; }
-
-   /* get the a */
-   if ((err = mp_read_radix(a, (char *)key->dp->A, 16)) != CRYPT_OK)                                    { goto error; }
-
    /* check for zero */
-   if (mp_iszero(r) || mp_iszero(s) || mp_cmp(r, p) != LTC_MP_LT || mp_cmp(s, p) != LTC_MP_LT) {
+   if (mp_cmp_d(r, 0) != LTC_MP_GT || mp_cmp_d(s, 0) != LTC_MP_GT ||
+       mp_cmp(r, p) != LTC_MP_LT || mp_cmp(s, p) != LTC_MP_LT) {
       err = CRYPT_INVALID_PACKET;
       goto error;
    }
@@ -120,10 +107,9 @@ static int ecc_verify_hash_ex(const unsigned char *sig,  unsigned long siglen,
    if ((err = mp_mulmod(r, w, p, u2)) != CRYPT_OK)                                                      { goto error; }
 
    /* find mG and mQ */
-   if ((err = mp_read_radix(mG->x, (char *)key->dp->Gx, 16)) != CRYPT_OK)                               { goto error; }
-   if ((err = mp_read_radix(mG->y, (char *)key->dp->Gy, 16)) != CRYPT_OK)                               { goto error; }
-   if ((err = mp_set(mG->z, 1)) != CRYPT_OK)                                                            { goto error; }
-
+   if ((err = mp_copy(key->dp.base.x, mG->x)) != CRYPT_OK)                                             { goto error; }
+   if ((err = mp_copy(key->dp.base.y, mG->y)) != CRYPT_OK)                                             { goto error; }
+   if ((err = mp_copy(key->dp.base.z, mG->z)) != CRYPT_OK)                                             { goto error; }
    if ((err = mp_copy(key->pubkey.x, mQ->x)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.y, mQ->y)) != CRYPT_OK)                                               { goto error; }
    if ((err = mp_copy(key->pubkey.z, mQ->z)) != CRYPT_OK)                                               { goto error; }
@@ -161,7 +147,7 @@ static int ecc_verify_hash_ex(const unsigned char *sig,  unsigned long siglen,
 error:
    ltc_ecc_del_point(mG);
    ltc_ecc_del_point(mQ);
-   mp_clear_multi(r, s, v, w, u1, u2, p, e, m, a, mu, ma, NULL);
+   mp_clear_multi(r, s, v, w, u1, u2, e, mu, ma, NULL);
    if (mp != NULL) {
       mp_montgomery_free(mp);
    }
@@ -182,7 +168,7 @@ int ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
                     const unsigned char *hash, unsigned long hashlen,
                     int *stat, ecc_key *key)
 {
-   return ecc_verify_hash_ex(sig, siglen, hash, hashlen, stat, key, 0);
+   return _ecc_verify_hash(sig, siglen, hash, hashlen, stat, key, 0);
 }
 
 /**
@@ -199,7 +185,11 @@ int ecc_verify_hash_rfc7518(const unsigned char *sig,  unsigned long siglen,
                             const unsigned char *hash, unsigned long hashlen,
                             int *stat, ecc_key *key)
 {
-   return ecc_verify_hash_ex(sig, siglen, hash, hashlen, stat, key, 1);
+   return _ecc_verify_hash(sig, siglen, hash, hashlen, stat, key, 1);
 }
 
 #endif
+
+/* ref:         $Format:%D$ */
+/* git commit:  $Format:%H$ */
+/* commit time: $Format:%ai$ */

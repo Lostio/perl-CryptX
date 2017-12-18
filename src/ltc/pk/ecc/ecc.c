@@ -7,9 +7,6 @@
  * guarantee it works.
  */
 
-/* Implements ECC over Z/pZ for curve y^2 = x^3 + a*x + b
- *
- */
 #include "tomcrypt.h"
 
 /**
@@ -19,10 +16,7 @@
 
 #ifdef LTC_MECC
 
-/* This array holds the curve parameters:
- *   - it ***MUST*** be organized by size from smallest to largest
- *   - due to curve lookup by keysize the ordering is very important
- *   - be careful when adding/removing items to/from this list
+/* This array holds the curve parameters.
  * Curves (prime field only) are taken from:
  *   - http://www.secg.org/collateral/sec2_final.pdf (named: SECP*)
  *   - http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf (named: NISTP*)
@@ -31,8 +25,7 @@
  */
 const ltc_ecc_set_type ltc_ecc_sets[] = {
 #if defined(LTC_ECC_SECP112R1) || defined(LTC_ECC112)
-{ /* this curve ***MUST*** be the first from all with size 14 (backward compatibility reasons) */
-  /* size/bytes */ 14,
+{
   /* curve name */ "SECP112R1",
   /* prime      */ "DB7C2ABF62E35E668076BEAD208B",
   /* A          */ "DB7C2ABF62E35E668076BEAD2088",
@@ -41,12 +34,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "09487239995A5EE76B55F9C2F098",
   /* Gy         */ "A89CE5AF8724C0A23E0E0FF77500",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,6}, 5 }
+  /* OID        */ { 1,3,132,0,6 }, 5
 },
 #endif
 #ifdef LTC_ECC_SECP112R2
 {
-  /* size/bytes */ 14,
   /* curve name */ "SECP112R2",
   /* prime      */ "DB7C2ABF62E35E668076BEAD208B",
   /* A          */ "6127C24C05F38A0AAAF65C0EF02C",
@@ -55,12 +47,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "4BA30AB5E892B4E1649DD0928643",
   /* Gy         */ "ADCD46F5882E3747DEF36E956E97",
   /* cofactor   */ 4,
-  /* OID struct */ { {1,3,132,0,7}, 5 }
+  /* OID        */ { 1,3,132,0,7 }, 5
 },
 #endif
 #if defined(LTC_ECC_SECP128R1) || defined(LTC_ECC128)
-{ /* this curve ***MUST*** be the first from all with size 16 (backward compatibility reasons) */
-  /* size/bytes */ 16,
+{
   /* curve name */ "SECP128R1",
   /* prime      */ "FFFFFFFDFFFFFFFFFFFFFFFFFFFFFFFF",
   /* A          */ "FFFFFFFDFFFFFFFFFFFFFFFFFFFFFFFC",
@@ -69,12 +60,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "161FF7528B899B2D0C28607CA52C5B86",
   /* Gy         */ "CF5AC8395BAFEB13C02DA292DDED7A83",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,28}, 5 }
+  /* OID        */ { 1,3,132,0,28 }, 5
 },
 #endif
 #ifdef LTC_ECC_SECP128R2
 {
-  /* size/bytes */ 16,
   /* curve name */ "SECP128R2",
   /* prime      */ "FFFFFFFDFFFFFFFFFFFFFFFFFFFFFFFF",
   /* A          */ "D6031998D1B3BBFEBF59CC9BBFF9AEE1",
@@ -83,12 +73,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "7B6AA5D85E572983E6FB32A7CDEBC140",
   /* Gy         */ "27B6916A894D3AEE7106FE805FC34B44",
   /* cofactor   */ 4,
-  /* OID struct */ { {1,3,132,0,29}, 5 }
+  /* OID        */ { 1,3,132,0,29 }, 5
 },
 #endif
 #if defined(LTC_ECC_SECP160R1) || defined(LTC_ECC160)
-{ /* this curve ***MUST*** be the first from all with size 20 (backward compatibility reasons) */
-  /* size/bytes */ 20,
+{
   /* curve name */ "SECP160R1",
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFF",
   /* A          */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFC",
@@ -97,12 +86,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "4A96B5688EF573284664698968C38BB913CBFC82",
   /* Gy         */ "23A628553168947D59DCC912042351377AC5FB32",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,8}, 5 }
+  /* OID        */ { 1,3,132,0,8 }, 5
 },
 #endif
 #ifdef LTC_ECC_SECP160R2
 {
-  /* size/bytes */ 20,
   /* curve name */ "SECP160R2",
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFAC73",
   /* A          */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFAC70",
@@ -111,12 +99,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "52DCB034293A117E1F4FF11B30F7199D3144CE6D",
   /* Gy         */ "FEAFFEF2E331F296E071FA0DF9982CFEA7D43F2E",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,30}, 5 }
+  /* OID        */ { 1,3,132,0,30 }, 5
 },
 #endif
 #ifdef LTC_ECC_SECP160K1
 {
-  /* size/bytes */ 20,
   /* curve name */ "SECP160K1",
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFAC73",
   /* A          */ "0000000000000000000000000000000000000000",
@@ -125,12 +112,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "3B4C382CE37AA192A4019E763036F4F5DD4D7EBB",
   /* Gy         */ "938CF935318FDCED6BC28286531733C3F03C4FEE",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,9}, 5 }
+  /* OID        */ { 1,3,132,0,9 }, 5
 },
 #endif
 #ifdef LTC_ECC_BRAINPOOLP160R1
 {
-  /* size/bytes */ 20,
   /* curve name */ "BRAINPOOLP160R1",
   /* prime      */ "E95E4A5F737059DC60DFC7AD95B3D8139515620F",
   /* A          */ "340E7BE2A280EB74E2BE61BADA745D97E8F7C300",
@@ -139,12 +125,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "BED5AF16EA3F6A4F62938C4631EB5AF7BDBCDBC3",
   /* Gy         */ "1667CB477A1A8EC338F94741669C976316DA6321",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,36,3,3,2,8,1,1,1}, 10 }
+  /* OID        */ { 1,3,36,3,3,2,8,1,1,1 }, 10
 },
 #endif
 #if defined(LTC_ECC_SECP192R1) || defined(LTC_ECC192)
-{ /* this curve ***MUST*** be the first from all with size 24 (backward compatibility reasons) */
-  /* size/bytes */ 24,
+{
   /* curve name */ "SECP192R1",  /* same as: NISTP192 PRIME192V1, old libtomcrypt name: ECC-192 */
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFF",
   /* A          */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFC",
@@ -153,12 +138,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "188DA80EB03090F67CBF20EB43A18800F4FF0AFD82FF1012",
   /* Gy         */ "07192B95FFC8DA78631011ED6B24CDD573F977A11E794811",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,2,840,10045,3,1,1}, 7 }
+  /* OID        */ { 1,2,840,10045,3,1,1 }, 7
 },
 #endif
 #ifdef LTC_ECC_PRIME192V2
 {
-  /* size/bytes */ 24,
   /* curve name */ "PRIME192V2",
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFF",
   /* A          */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFC",
@@ -167,12 +151,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "EEA2BAE7E1497842F2DE7769CFE9C989C072AD696F48034A",
   /* Gy         */ "6574D11D69B6EC7A672BB82A083DF2F2B0847DE970B2DE15",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,2,840,10045,3,1,2}, 7 }
+  /* OID        */ { 1,2,840,10045,3,1,2 }, 7
 },
 #endif
 #ifdef LTC_ECC_PRIME192V3
 {
-  /* size/bytes */ 24,
   /* curve name */ "PRIME192V3",
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFF",
   /* A          */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFC",
@@ -181,12 +164,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "7D29778100C65A1DA1783716588DCE2B8B4AEE8E228F1896",
   /* Gy         */ "38A90F22637337334B49DCB66A6DC8F9978ACA7648A943B0",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,2,840,10045,3,1,3}, 7 }
+  /* OID        */ { 1,2,840,10045,3,1,3 }, 7
 },
 #endif
 #ifdef LTC_ECC_SECP192K1
 {
-  /* size/bytes */ 24,
   /* curve name */ "SECP192K1",
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFEE37",
   /* A          */ "000000000000000000000000000000000000000000000000",
@@ -195,12 +177,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "DB4FF10EC057E9AE26B07D0280B7F4341DA5D1B1EAE06C7D",
   /* Gy         */ "9B2F2F6D9C5628A7844163D015BE86344082AA88D95E2F9D",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,31}, 5 }
+  /* OID        */ { 1,3,132,0,31 }, 5
 },
 #endif
 #ifdef LTC_ECC_BRAINPOOLP192R1
 {
-  /* size/bytes */ 24,
   /* curve name */ "BRAINPOOLP192R1",
   /* prime      */ "C302F41D932A36CDA7A3463093D18DB78FCE476DE1A86297",
   /* A          */ "6A91174076B1E0E19C39C031FE8685C1CAE040E5C69A28EF",
@@ -209,12 +190,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "C0A0647EAAB6A48753B033C56CB0F0900A2F5C4853375FD6",
   /* Gy         */ "14B690866ABD5BB88B5F4828C1490002E6773FA2FA299B8F",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,36,3,3,2,8,1,1,3}, 10 }
+  /* OID        */ { 1,3,36,3,3,2,8,1,1,3 }, 10
 },
 #endif
 #if defined(LTC_ECC_SECP224R1) || defined(LTC_ECC224)
-{ /* this curve ***MUST*** be the first from all with size 28 (backward compatibility reasons) */
-  /* size/bytes */ 28,
+{
   /* curve name */ "SECP224R1",  /* same as: NISTP224, old libtomcrypt name: ECC-224 */
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000001",
   /* A          */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFE",
@@ -223,12 +203,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "B70E0CBD6BB4BF7F321390B94A03C1D356C21122343280D6115C1D21",
   /* Gy         */ "BD376388B5F723FB4C22DFE6CD4375A05A07476444D5819985007E34",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,33}, 5 }
+  /* OID        */ { 1,3,132,0,33 }, 5
 },
 #endif
 #ifdef LTC_ECC_SECP224K1
 {
-  /* size/bytes */ 28,
   /* curve name */ "SECP224K1",
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFE56D",
   /* A          */ "00000000000000000000000000000000000000000000000000000000",
@@ -237,12 +216,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "A1455B334DF099DF30FC28A169A467E9E47075A90F7E650EB6B7A45C",
   /* Gy         */ "7E089FED7FBA344282CAFBD6F7E319F7C0B0BD59E2CA4BDB556D61A5",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,32}, 5 }
+  /* OID        */ { 1,3,132,0,32 }, 5
 },
 #endif
 #ifdef LTC_ECC_BRAINPOOLP224R1
 {
-  /* size/bytes */ 28,
   /* curve name */ "BRAINPOOLP224R1",
   /* prime      */ "D7C134AA264366862A18302575D1D787B09F075797DA89F57EC8C0FF",
   /* A          */ "68A5E62CA9CE6C1C299803A6C1530B514E182AD8B0042A59CAD29F43",
@@ -251,12 +229,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "0D9029AD2C7E5CF4340823B2A87DC68C9E4CE3174C1E6EFDEE12C07D",
   /* Gy         */ "58AA56F772C0726F24C6B89E4ECDAC24354B9E99CAA3F6D3761402CD",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,36,3,3,2,8,1,1,5}, 10 }
+  /* OID        */ { 1,3,36,3,3,2,8,1,1,5 }, 10
 },
 #endif
 #ifdef LTC_ECC_PRIME239V1
 {
-  /* size/bytes */ 30,
   /* curve name */ "PRIME239V1",
   /* prime      */ "7FFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFF8000000000007FFFFFFFFFFF",
   /* A          */ "7FFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFF8000000000007FFFFFFFFFFC",
@@ -265,12 +242,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "0FFA963CDCA8816CCC33B8642BEDF905C3D358573D3F27FBBD3B3CB9AAAF",
   /* Gy         */ "7DEBE8E4E90A5DAE6E4054CA530BA04654B36818CE226B39FCCB7B02F1AE",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,2,840,10045,3,1,4}, 7 }
+  /* OID        */ { 1,2,840,10045,3,1,4 }, 7
 },
 #endif
 #ifdef LTC_ECC_PRIME239V2
 {
-  /* size/bytes */ 30,
   /* curve name */ "PRIME239V2",
   /* prime      */ "7FFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFF8000000000007FFFFFFFFFFF",
   /* A          */ "7FFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFF8000000000007FFFFFFFFFFC",
@@ -279,12 +255,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "38AF09D98727705120C921BB5E9E26296A3CDCF2F35757A0EAFD87B830E7",
   /* Gy         */ "5B0125E4DBEA0EC7206DA0FC01D9B081329FB555DE6EF460237DFF8BE4BA",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,2,840,10045,3,1,5}, 7 }
+  /* OID        */ { 1,2,840,10045,3,1,5 }, 7
 },
 #endif
 #ifdef LTC_ECC_PRIME239V3
 {
-  /* size/bytes */ 30,
   /* curve name */ "PRIME239V3",
   /* prime      */ "7FFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFF8000000000007FFFFFFFFFFF",
   /* A          */ "7FFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFF8000000000007FFFFFFFFFFC",
@@ -293,12 +268,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "6768AE8E18BB92CFCF005C949AA2C6D94853D0E660BBF854B1C9505FE95A",
   /* Gy         */ "1607E6898F390C06BC1D552BAD226F3B6FCFE48B6E818499AF18E3ED6CF3",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,2,840,10045,3,1,6}, 7 }
+  /* OID        */ { 1,2,840,10045,3,1,6 }, 7
 },
 #endif
 #if defined(LTC_ECC_SECP256R1) || defined(LTC_ECC256)
-{ /* this curve ***MUST*** be the first from all with size 32 (backward compatibility reasons) */
-  /* size/bytes */ 32,
+{
   /* curve name */ "SECP256R1",  /* same as: NISTP256 PRIME256V1, old libtomcrypt name: ECC-256 */
   /* prime      */ "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF",
   /* A          */ "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFC",
@@ -307,12 +281,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296",
   /* Gy         */ "4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,2,840,10045,3,1,7}, 7 }
+  /* OID        */ { 1,2,840,10045,3,1,7 }, 7
 },
 #endif
 #ifdef LTC_ECC_SECP256K1
 {
-  /* size/bytes */ 32,
   /* curve name */ "SECP256K1",
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F",
   /* A          */ "0000000000000000000000000000000000000000000000000000000000000000",
@@ -321,12 +294,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798",
   /* Gy         */ "483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,10}, 5 }
+  /* OID        */ { 1,3,132,0,10 }, 5
 },
 #endif
 #ifdef LTC_ECC_BRAINPOOLP256R1
 {
-  /* size/bytes */ 32,
   /* curve name */ "BRAINPOOLP256R1",
   /* prime      */ "A9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377",
   /* A          */ "7D5A0975FC2C3057EEF67530417AFFE7FB8055C126DC5C6CE94A4B44F330B5D9",
@@ -335,12 +307,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262",
   /* Gy         */ "547EF835C3DAC4FD97F8461A14611DC9C27745132DED8E545C1D54C72F046997",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,36,3,3,2,8,1,1,7}, 10 }
+  /* OID        */ { 1,3,36,3,3,2,8,1,1,7 }, 10
 },
 #endif
 #ifdef LTC_ECC_BRAINPOOLP320R1
 {
-  /* size/bytes */ 40,
   /* curve name */ "BRAINPOOLP320R1",
   /* prime      */ "D35E472036BC4FB7E13C785ED201E065F98FCFA6F6F40DEF4F92B9EC7893EC28FCD412B1F1B32E27",
   /* A          */ "3EE30B568FBAB0F883CCEBD46D3F3BB8A2A73513F5EB79DA66190EB085FFA9F492F375A97D860EB4",
@@ -349,12 +320,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "43BD7E9AFB53D8B85289BCC48EE5BFE6F20137D10A087EB6E7871E2A10A599C710AF8D0D39E20611",
   /* Gy         */ "14FDD05545EC1CC8AB4093247F77275E0743FFED117182EAA9C77877AAAC6AC7D35245D1692E8EE1",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,36,3,3,2,8,1,1,9}, 10 }
+  /* OID        */ { 1,3,36,3,3,2,8,1,1,9 }, 10
 },
 #endif
 #if defined(LTC_ECC_SECP384R1) || defined(LTC_ECC384)
-{ /* this curve ***MUST*** be the first from all with size 48 (backward compatibility reasons) */
-  /* size/bytes */ 48,
+{
   /* curve name */ "SECP384R1",  /* same as: NISTP384, old libtomcrypt name: ECC-384 */
   /* prime      */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFF0000000000000000FFFFFFFF",
   /* A          */ "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFF0000000000000000FFFFFFFC",
@@ -363,12 +333,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "AA87CA22BE8B05378EB1C71EF320AD746E1D3B628BA79B9859F741E082542A385502F25DBF55296C3A545E3872760AB7",
   /* Gy         */ "3617DE4A96262C6F5D9E98BF9292DC29F8F41DBD289A147CE9DA3113B5F0B8C00A60B1CE1D7E819D7A431D7C90EA0E5F",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,34}, 5 }
+  /* OID        */ { 1,3,132,0,34 }, 5
 },
 #endif
 #ifdef LTC_ECC_BRAINPOOLP384R1
 {
-  /* size/bytes */ 48,
   /* curve name */ "BRAINPOOLP384R1",
   /* prime      */ "8CB91E82A3386D280F5D6F7E50E641DF152F7109ED5456B412B1DA197FB71123ACD3A729901D1A71874700133107EC53",
   /* A          */ "7BC382C63D8C150C3C72080ACE05AFA0C2BEA28E4FB22787139165EFBA91F90F8AA5814A503AD4EB04A8C7DD22CE2826",
@@ -377,12 +346,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "1D1C64F068CF45FFA2A63A81B7C13F6B8847A3E77EF14FE3DB7FCAFE0CBD10E8E826E03436D646AAEF87B2E247D4AF1E",
   /* Gy         */ "8ABE1D7520F9C2A45CB1EB8E95CFD55262B70B29FEEC5864E19C054FF99129280E4646217791811142820341263C5315",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,36,3,3,2,8,1,1,11}, 10 }
+  /* OID        */ { 1,3,36,3,3,2,8,1,1,11 }, 10
 },
 #endif
 #ifdef LTC_ECC_BRAINPOOLP512R1
 {
-  /* size/bytes */ 64,
   /* curve name */ "BRAINPOOLP512R1",
   /* prime      */ "AADD9DB8DBE9C48B3FD4E6AE33C9FC07CB308DB3B3C9D20ED6639CCA703308717D4D9B009BC66842AECDA12AE6A380E62881FF2F2D82C68528AA6056583A48F3",
   /* A          */ "7830A3318B603B89E2327145AC234CC594CBDD8D3DF91610A83441CAEA9863BC2DED5D5AA8253AA10A2EF1C98B9AC8B57F1117A72BF2C7B9E7C1AC4D77FC94CA",
@@ -391,12 +359,11 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "81AEE4BDD82ED9645A21322E9C4C6A9385ED9F70B5D916C1B43B62EEF4D0098EFF3B1F78E2D0D48D50D1687B93B97D5F7C6D5047406A5E688B352209BCB9F822",
   /* Gy         */ "7DDE385D566332ECC0EABFA9CF7822FDF209F70024A57B1AA000C55B881F8111B2DCDE494A5F485E5BCA4BD88A2763AED1CA2B2FA8F0540678CD1E0F3AD80892",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,36,3,3,2,8,1,1,13}, 10 }
+  /* OID        */ { 1,3,36,3,3,2,8,1,1,13 }, 10
 },
 #endif
 #if defined(LTC_ECC_SECP521R1) || defined(LTC_ECC521)
-{ /* this curve ***MUST*** be the first from all with size 66 (backward compatibility reasons) */
-  /* size/bytes */ 66,
+{
   /* curve name */ "SECP521R1",  /* same as: NISTP521, old libtomcrypt name: ECC-521 */
   /* prime      */ "01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
   /* A          */ "01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC",
@@ -405,14 +372,13 @@ const ltc_ecc_set_type ltc_ecc_sets[] = {
   /* Gx         */ "00C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66",
   /* Gy         */ "011839296A789A3BC0045C8A5FB42C7D1BD998F54449579B446817AFBD17273E662C97EE72995EF42640C550B9013FAD0761353C7086A272C24088BE94769FD16650",
   /* cofactor   */ 1,
-  /* OID struct */ { {1,3,132,0,35}, 5 }
+  /* OID        */ { 1,3,132,0,35 }, 5
 },
 #endif
 {
-   0,
    NULL, NULL, NULL, NULL, NULL, NULL, NULL,
    0,
-   { { 0 }, 0 }
+   { 0 }, 0
 }
 };
 

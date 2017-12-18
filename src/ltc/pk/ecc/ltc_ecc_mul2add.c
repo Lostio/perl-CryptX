@@ -7,9 +7,6 @@
  * guarantee it works.
  */
 
-/* Implements ECC over Z/pZ for curve y^2 = x^3 + a*x + b
- *
- */
 #include "tomcrypt.h"
 
 /**
@@ -30,11 +27,11 @@
   @param modulus  Modulus for curve
   @return CRYPT_OK on success
 */
-int ltc_ecc_mul2add(ecc_point *A, void *kA,
-                    ecc_point *B, void *kB,
-                    ecc_point *C,
-                         void *a,
-                         void *modulus)
+int ltc_ecc_mul2add(const ecc_point *A, void *kA,
+                    const ecc_point *B, void *kB,
+                          ecc_point *C,
+                               void *a,
+                               void *modulus)
 {
   ecc_point     *precomp[16];
   unsigned       bitbufA, bitbufB, lenA, lenB, len, nA, nB, nibble;

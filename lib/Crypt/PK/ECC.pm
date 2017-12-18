@@ -370,9 +370,117 @@ my %jwkcrv = (
         'P-521'   => 'secp521r1',
 );
 
+my %jwk2oid = (
+  '1.2.840.10045.3.1.1' => 'P-192', # secp192r1
+  '1.3.132.0.33'        => 'P-224', # secp224r1',
+  '1.2.840.10045.3.1.7' => 'P-256', # secp256r1',
+  '1.3.132.0.34'        => 'P-384', # secp384r1',
+  '1.3.132.0.35'        => 'P-521', # secp521r1',
+);
+
+our %curve2ltc = ( # must be "our" as we use it from XS code
+  # OIDs
+  "1.2.840.10045.3.1.1"   => "SECP192R1",
+  "1.2.840.10045.3.1.2"   => "PRIME192V2",
+  "1.2.840.10045.3.1.3"   => "PRIME192V3",
+  "1.2.840.10045.3.1.4"   => "PRIME239V1",
+  "1.2.840.10045.3.1.5"   => "PRIME239V2",
+  "1.2.840.10045.3.1.6"   => "PRIME239V3",
+  "1.2.840.10045.3.1.7"   => "SECP256R1",
+  "1.3.132.0.10"          => "SECP256K1",
+  "1.3.132.0.28"          => "SECP128R1",
+  "1.3.132.0.29"          => "SECP128R2",
+  "1.3.132.0.30"          => "SECP160R2",
+  "1.3.132.0.31"          => "SECP192K1",
+  "1.3.132.0.32"          => "SECP224K1",
+  "1.3.132.0.33"          => "SECP224R1",
+  "1.3.132.0.34"          => "SECP384R1",
+  "1.3.132.0.35"          => "SECP521R1",
+  "1.3.132.0.6"           => "SECP112R1",
+  "1.3.132.0.7"           => "SECP112R2",
+  "1.3.132.0.8"           => "SECP160R1",
+  "1.3.132.0.9"           => "SECP160K1",
+  "1.3.36.3.3.2.8.1.1.1"  => "BRAINPOOLP160R1",
+  "1.3.36.3.3.2.8.1.1.11" => "BRAINPOOLP384R1",
+  "1.3.36.3.3.2.8.1.1.13" => "BRAINPOOLP512R1",
+  "1.3.36.3.3.2.8.1.1.3"  => "BRAINPOOLP192R1",
+  "1.3.36.3.3.2.8.1.1.5"  => "BRAINPOOLP224R1",
+  "1.3.36.3.3.2.8.1.1.7"  => "BRAINPOOLP256R1",
+  "1.3.36.3.3.2.8.1.1.9"  => "BRAINPOOLP320R1",
+  # JWT names
+  "P-192"                 => "SECP192R1",
+  "P-224"                 => "SECP224R1",
+  "P-256"                 => "SECP256R1",
+  "P-384"                 => "SECP384R1",
+  "P-521"                 => "SECP521R1",
+  # openssl names
+  "brainpoolp160r1"       => "BRAINPOOLP160R1",
+  "brainpoolp192r1"       => "BRAINPOOLP192R1",
+  "brainpoolp224r1"       => "BRAINPOOLP224R1",
+  "brainpoolp256r1"       => "BRAINPOOLP256R1",
+  "brainpoolp320r1"       => "BRAINPOOLP320R1",
+  "brainpoolp384r1"       => "BRAINPOOLP384R1",
+  "brainpoolp512r1"       => "BRAINPOOLP512R1",
+  "nistp192"              => "SECP192R1",
+  "nistp224"              => "SECP224R1",
+  "nistp256"              => "SECP256R1",
+  "nistp384"              => "SECP384R1",
+  "nistp521"              => "SECP521R1",
+  "prime192v1"            => "SECP192R1",
+  "prime192v2"            => "PRIME192V2",
+  "prime192v3"            => "PRIME192V3",
+  "prime239v1"            => "PRIME239V1",
+  "prime239v2"            => "PRIME239V2",
+  "prime239v3"            => "PRIME239V3",
+  "prime256v1"            => "SECP256R1",
+  "secp112r1"             => "SECP112R1",
+  "secp112r2"             => "SECP112R2",
+  "secp128r1"             => "SECP128R1",
+  "secp128r2"             => "SECP128R2",
+  "secp160k1"             => "SECP160K1",
+  "secp160r1"             => "SECP160R1",
+  "secp160r2"             => "SECP160R2",
+  "secp192k1"             => "SECP192K1",
+  "secp192r1"             => "SECP192R1",
+  "secp224k1"             => "SECP224K1",
+  "secp224r1"             => "SECP224R1",
+  "secp256k1"             => "SECP256K1",
+  "secp256r1"             => "SECP256R1",
+  "secp384r1"             => "SECP384R1",
+  "secp521r1"             => "SECP521R1",
+  # limtomcrypt names (just for convenience)
+  "BRAINPOOLP160R1"       => "BRAINPOOLP160R1",
+  "BRAINPOOLP192R1"       => "BRAINPOOLP192R1",
+  "BRAINPOOLP224R1"       => "BRAINPOOLP224R1",
+  "BRAINPOOLP256R1"       => "BRAINPOOLP256R1",
+  "BRAINPOOLP320R1"       => "BRAINPOOLP320R1",
+  "BRAINPOOLP384R1"       => "BRAINPOOLP384R1",
+  "BRAINPOOLP512R1"       => "BRAINPOOLP512R1",
+  "PRIME192V2"            => "PRIME192V2",
+  "PRIME192V3"            => "PRIME192V3",
+  "PRIME239V1"            => "PRIME239V1",
+  "PRIME239V2"            => "PRIME239V2",
+  "PRIME239V3"            => "PRIME239V3",
+  "SECP112R1"             => "SECP112R1",
+  "SECP112R2"             => "SECP112R2",
+  "SECP128R1"             => "SECP128R1",
+  "SECP128R2"             => "SECP128R2",
+  "SECP160K1"             => "SECP160K1",
+  "SECP160R1"             => "SECP160R1",
+  "SECP160R2"             => "SECP160R2",
+  "SECP192K1"             => "SECP192K1",
+  "SECP192R1"             => "SECP192R1",
+  "SECP224K1"             => "SECP224K1",
+  "SECP224R1"             => "SECP224R1",
+  "SECP256K1"             => "SECP256K1",
+  "SECP256R1"             => "SECP256R1",
+  "SECP384R1"             => "SECP384R1",
+  "SECP521R1"             => "SECP521R1",
+);
+
 sub _import_hex {
   my ($self, $x, $y, $k, $crv) = @_;
-  my $p = $curve{$crv}{prime};
+  my $p = $curve{$crv}{prime}; #XXX-FIXME
   croak "FATAL: invalid or unknown curve" if !$p;
   $p =~ s/^0+//;
   my $hex_size = length($p) % 2 ? length($p) + 1 : length($p);
@@ -395,6 +503,7 @@ sub _import_hex {
 sub _curve_name_lookup {
   my ($self, $key) = @_;
 
+  #XXX-FIXME
   return $key->{curve_name} if $key->{curve_name} && exists $curve{$key->{curve_name}};
 
   defined(my $A        = $key->{curve_A})        or return;
@@ -411,6 +520,7 @@ sub _curve_name_lookup {
   $order =~ s/^0+//;
   $prime =~ s/^0+//;
 
+  #XXX-FIXME
   for my $k (sort keys %curve) {
     (my $c_A       = $curve{$k}{A}       ) =~ s/^0+//;
     (my $c_B       = $curve{$k}{B}       ) =~ s/^0+//;
@@ -442,12 +552,14 @@ sub export_key_pem {
 sub export_key_jwk {
   my ($self, $type, $wanthash) = @_;
   my $kh = $self->key2hash;
-  my $curve = $self->_curve_name_lookup($kh);
-  $curve = 'P-192' if $curve =~ /(secp192r1|nistp192|prime192v1)/;
-  $curve = 'P-224' if $curve =~ /(secp224r1|nistp224)/;
-  $curve = 'P-256' if $curve =~ /(secp256r1|nistp256|prime256v1)/;
-  $curve = 'P-384' if $curve =~ /(secp384r1|nistp384)/;
-  $curve = 'P-521' if $curve =~ /(secp521r1|nistp521)/;
+  ### XXX-FIXME
+  ### XXX my $curve_jwt = $curve2ltc{$kh->{curve_oid}};
+  my $curve_jwt = $self->_curve_name_lookup($kh);
+  $curve_jwt = 'P-192' if $curve_jwt =~ /(secp192r1|nistp192|prime192v1)/i;
+  $curve_jwt = 'P-224' if $curve_jwt =~ /(secp224r1|nistp224)/i;
+  $curve_jwt = 'P-256' if $curve_jwt =~ /(secp256r1|nistp256|prime256v1)/i;
+  $curve_jwt = 'P-384' if $curve_jwt =~ /(secp384r1|nistp384)/i;
+  $curve_jwt = 'P-521' if $curve_jwt =~ /(secp521r1|nistp521)/i;
   if ($type && $type eq 'private') {
     return unless $kh->{pub_x} && $kh->{pub_y} && $kh->{k};
     for (qw/pub_x pub_y k/) {
@@ -456,7 +568,7 @@ sub export_key_jwk {
     # NOTE: x + y are not necessary in privkey
     # but they are used in https://tools.ietf.org/html/rfc7517#appendix-A.2
     my $hash = {
-      kty => "EC", crv=>$curve,
+      kty => "EC", crv => $curve_jwt,
       x => encode_b64u(pack("H*", $kh->{pub_x})),
       y => encode_b64u(pack("H*", $kh->{pub_y})),
       d => encode_b64u(pack("H*", $kh->{k})),
@@ -469,7 +581,7 @@ sub export_key_jwk {
       $kh->{$_} = "0$kh->{$_}" if length($kh->{$_}) % 2;
     }
     my $hash = {
-      kty => "EC", crv=>$curve,
+      kty => "EC", crv => $curve_jwt,
       x => encode_b64u(pack("H*", $kh->{pub_x})),
       y => encode_b64u(pack("H*", $kh->{pub_y})),
     };
@@ -493,9 +605,10 @@ sub import_key {
   if (ref($key) eq 'HASH') {
     if (($key->{pub_x} && $key->{pub_y}) || $key->{k}) {
       # hash exported via key2hash
-      my $curve = $self->_curve_name_lookup($key);
-      croak "FATAL: invalid or unknown curve" if !$curve;
-      return $self->_import_hex($key->{pub_x}, $key->{pub_y}, $key->{k}, $curve);
+      ### XXX my $curve_name = $curve2ltc{$key->{curve_oid}};
+      my $curve_name = $self->_curve_name_lookup($key);
+      croak "FATAL: invalid or unknown curve" if !$curve_name;
+      return $self->_import_hex($key->{pub_x}, $key->{pub_y}, $key->{k}, $curve_name);
     }
     if ($key->{crv} && $key->{kty} && $key->{kty} eq "EC" && ($key->{d} || ($key->{x} && $key->{y}))) {
       # hash with items corresponding to JSON Web Key (JWK)
@@ -503,8 +616,8 @@ sub import_key {
       for (qw/x y d/) {
         $key->{$_} = eval { unpack("H*", decode_b64u($key->{$_})) } if exists $key->{$_};
       }
-      if (my $curve = $jwkcrv{$key->{crv}}) {
-        return $self->_import_hex($key->{x}, $key->{y}, $key->{d}, $curve);
+      if (my $curve_name = $jwkcrv{$key->{crv}}) {
+        return $self->_import_hex($key->{x}, $key->{y}, $key->{d}, $curve_name);
       }
       # curve is not JWK compliant e.g. P-192 P-224 P-256 P-384 P-521 (we'll try to import anyway)
       return $self->_import_hex($key->{x}, $key->{y}, $key->{d}, lc($key->{crv}));
@@ -544,12 +657,16 @@ sub import_key {
       for (qw/x y d/) {
         $h->{$_} = eval { unpack("H*", decode_b64u($h->{$_})) } if exists $h->{$_};
       }
-      if (my $curve = $jwkcrv{$h->{crv}}) {
-        return $self->_import_hex($h->{x}, $h->{y}, $h->{d}, $curve);
+      if (my $curve_name = $jwkcrv{$h->{crv}}) {
+        return $self->_import_hex($h->{x}, $h->{y}, $h->{d}, $curve_name);
       }
       # curve is not JWK compliant e.g. P-192 P-224 P-256 P-384 P-521 (we'll try to import anyway)
       return $self->_import_hex($h->{x}, $h->{y}, $h->{d}, lc($h->{crv}));
     }
+  }
+  elsif ($data =~ /-----BEGIN CERTIFICATE-----(.*?)-----END CERTIFICATE-----/sg) {
+    $data = pem_to_der($data);
+    return $self->_import_x509($data);
   }
   elsif ($data =~ /---- BEGIN SSH2 PUBLIC KEY ----(.*?)---- END SSH2 PUBLIC KEY ----/sg) {
     $data = pem_to_der($data);
@@ -562,7 +679,7 @@ sub import_key {
     return $self->import_key_raw($pubkey, "$2") if $pubkey && $typ =~ /^ecdsa-(.+?)-(.*)$/;
   }
   else {
-    my $rv = eval { $self->_import($data) } || eval { $self->_import_pkcs8($data, $password) };
+    my $rv = eval { $self->_import($data) } || eval { $self->_import_pkcs8($data, $password) } || eval { $self->_import_x509($data) };
     return $rv if $rv;
   }
   croak "FATAL: invalid or unsupported EC key format";
@@ -964,7 +1081,7 @@ Supported key formats:
  lEHQYjWya2YnHaPq/iMFa7A=
  -----END PRIVATE KEY-----
 
-=item * PKCS#8 encrypted private keys ARE NOT SUPPORTED YET!
+=item * PKCS#8 encrypted private keys
 
  -----BEGIN ENCRYPTED PRIVATE KEY-----
  MIGYMBwGCiqGSIb3DQEMAQMwDgQINApjTa6oFl0CAggABHi+59l4d4e6KtG9yci2
@@ -972,6 +1089,19 @@ Supported key formats:
  NfckdL5O2L8MRnM+ljkFtV2Te4fszWcJFdd7KiNOkPpn+7sWLfzQdvhHChLKUzmz
  4INKZyMv/G7VpZ0=
  -----END ENCRYPTED PRIVATE KEY-----
+
+=item * EC public key from X509 certificate
+
+ -----BEGIN CERTIFICATE-----
+ MIIBdDCCARqgAwIBAgIJAL2BBClDEnnOMAoGCCqGSM49BAMEMBcxFTATBgNVBAMM
+ DFRlc3QgQ2VydCBFQzAgFw0xNzEyMzAyMDMzNDFaGA8zMDE3MDUwMjIwMzM0MVow
+ FzEVMBMGA1UEAwwMVGVzdCBDZXJ0IEVDMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAE
+ KvkL2r5xZp7RzxLQJK+6tn/7lic+L70e1fmNbHOdxRaRvbK5G0AQWrdsbjJb92Ni
+ lCQk2+w/i+VuS2Q3MSR5TaNQME4wHQYDVR0OBBYEFGbJkDyKgaMcIGHS8/WuqIVw
+ +R8sMB8GA1UdIwQYMBaAFGbJkDyKgaMcIGHS8/WuqIVw+R8sMAwGA1UdEwQFMAMB
+ Af8wCgYIKoZIzj0EAwQDSAAwRQIhAJtOsmrM+gJpImoynAyqTN+7myL71uxd+YeC
+ 6ze4MnzWAiBQi5/BqEr/SQ1+BC2TPtswvJPRFh2ZvT/6Km3gKoNVXQ==
+ -----END CERTIFICATE-----
 
 =item * SSH public EC keys
 

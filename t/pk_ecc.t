@@ -187,8 +187,8 @@ for my $pub (qw/openssl_ec-short.pub.pem openssl_ec-short.pub.der/) {
   ok($k->export_key_der('private_short'), "export_key_der auto oid");
 
   $k = Crypt::PK::ECC->new;
-  ok($k->generate_key({ %$params, A => '0' }), "generate_key invalid auto oid");
-  is($k->key2hash->{curve_name}, 'custom', "key2hash custom curve_name");
+  ok($k->generate_key({ %$params, cofactor => 6 }), "generate_key invalid auto oid");
+  ok(!exists($k->key2hash->{curve_name}), "key2hash custom curve_name");
   ok(!exists($k->key2hash->{curve_oid}), "key2hash curve_oid doesn't exist");
   eval { $k->export_key_der('private_short'); };
   ok($@, "export_key_der invalid auto oid");

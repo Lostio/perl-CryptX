@@ -51,28 +51,14 @@ int der_decode_sequence_ex(const unsigned char *in, unsigned long  inlen,
    /* check if the msb is set, which signals that the
     * 7 lsb bits represent the number of bytes of the length
     */
-   if (in[x] < 128) {
-      blksize = in[x++];
-   } else {
-      if (in[x] < 0x81 || in[x] > 0x83) {
-         return CRYPT_INVALID_PACKET;
-      }
-      y = in[x++] & 0x7F;
-
-      /* would reading the len bytes overrun? */
-      if (x + y > inlen) {
-         return CRYPT_INVALID_PACKET;
-      }
-
-      /* read len */
-      blksize = 0;
-      while (y--) {
-          blksize = (blksize << 8) | (unsigned long)in[x++];
-      }
+   y = inlen - x;
+   if ((err = der_decode_asn1_length(&in[x], &y, &blksize)) != CRYPT_OK) {
+      return err;
    }
+   x += y;
 
    /* would this blksize overflow? */
-   if (x + blksize > inlen) {
+   if (blksize > (inlen - x)) {
       return CRYPT_INVALID_PACKET;
    }
 
@@ -92,20 +78,6 @@ int der_decode_sequence_ex(const unsigned char *in, unsigned long  inlen,
 
        if (type == LTC_ASN1_EOL) {
           break;
-       }
-
-       /* handle context specific tags - just skip the tag + len bytes */
-       z = 0;
-       if (list[i].tag > 0 && list[i].tag == in[x + z++]) {
-         if (in[x+z] & 0x80) {
-            y = in[x + z++] & 0x7F;
-            if (y == 0 || y > 2) { return CRYPT_INVALID_PACKET; }
-            z += y;
-         } else {
-            z++;
-         }
-         x     += z;
-         inlen -= z;
        }
 
        switch (type) {
@@ -294,6 +266,16 @@ int der_decode_sequence_ex(const unsigned char *in, unsigned long  inlen,
                }
                break;
 
+           case LTC_ASN1_CUSTOM_TYPE:
+               z = inlen;
+               if ((err = der_decode_custom_type(in + x, z, &list[i])) != CRYPT_OK) {
+                  if (!ordered || list[i].optional) { continue; }
+                  goto LBL_ERR;
+               }
+               if ((err = der_length_custom_type(&list[i], &z, NULL)) != CRYPT_OK) {
+                  goto LBL_ERR;
+               }
+               break;
 
            case LTC_ASN1_CHOICE:
                z = inlen;
@@ -303,8 +285,6 @@ int der_decode_sequence_ex(const unsigned char *in, unsigned long  inlen,
                }
                break;
 
-           case LTC_ASN1_CONSTRUCTED:
-           case LTC_ASN1_CONTEXT_SPECIFIC:
            case LTC_ASN1_EOL:
                err = CRYPT_INVALID_ARG;
                goto LBL_ERR;

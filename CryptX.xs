@@ -271,7 +271,8 @@ STATIC SV * sv_from_mpi(mp_int *mpi) {
 
 void _ecc_oid_lookup(ecc_key *key)
 {
-   int err, i;
+   int err;
+   unsigned i;
    void *tmp;
    const ltc_ecc_set_type *set;
 

@@ -98,7 +98,7 @@ import_key_raw(Crypt::PK::ECC self, SV * key_data, SV * curve)
         rv = _ecc_set_dp_from_SV(&self->key, curve); /* croaks on error */
         if (rv != CRYPT_OK) croak("FATAL: ecc_set_dp failed: %s", error_to_string(rv));
         /* import key */
-        type = data_len == ecc_get_size(&self->key) ? PK_PRIVATE : PK_PUBLIC;
+        type = (data_len == (STRLEN)ecc_get_size(&self->key)) ? PK_PRIVATE : PK_PUBLIC;
         rv = ecc_set_key(data, (unsigned long)data_len, type, &self->key);
         if (rv != CRYPT_OK) croak("FATAL: ecc_set_key failed: %s", error_to_string(rv));
         XPUSHs(ST(0)); /* return self */
@@ -188,7 +188,7 @@ key2hash(Crypt::PK::ECC self)
           if (self->key.dp.oidlen > 0) {
             unsigned long i;
             HV *h;
-            SV *crv, **pref;
+            SV **pref;
             SV *name;
             char *ch_name_ptr;
             char *name_ptr;

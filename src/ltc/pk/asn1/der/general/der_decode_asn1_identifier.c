@@ -115,7 +115,11 @@ int der_decode_asn1_identifier(const unsigned char *in, unsigned long *inlen, lt
             (id->pc == tag_constructed_map[id->tag])) {
          id->type = der_asn1_tag_to_type_map[id->tag];
       } else {
-         id->type = LTC_ASN1_CUSTOM_TYPE;
+         if ((id->class == LTC_ASN1_CL_UNIVERSAL) && (id->tag == 0)) {
+            id->type = LTC_ASN1_EOL;
+         } else {
+            id->type = LTC_ASN1_CUSTOM_TYPE;
+         }
       }
    }
 

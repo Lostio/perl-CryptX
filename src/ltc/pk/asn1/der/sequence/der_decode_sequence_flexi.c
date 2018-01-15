@@ -75,43 +75,45 @@ int der_decode_sequence_flexi(const unsigned char *in, unsigned long *inlen, ltc
       /* read the type byte */
       identifier = *in;
 
-      /* fetch length */
-      len_len = *inlen - id_len;
+      if (l->type != LTC_ASN1_EOL) {
+         /* fetch length */
+         len_len = *inlen - id_len;
 #if defined(LTC_TEST_DBG)
-      data_offset = 666;
-      len = 0;
+         data_offset = 666;
+         len = 0;
 #endif
-      if ((err = der_decode_asn1_length(&in[id_len], &len_len, &len)) != CRYPT_OK) {
+         if ((err = der_decode_asn1_length(&in[id_len], &len_len, &len)) != CRYPT_OK) {
 #if defined(LTC_TEST_DBG)
-         fprintf(stderr, "E1 %02lx: hl=%4lu l=%4lu - %s (%s)\n", identifier, data_offset, len, der_asn1_tag_to_string_map[l->tag], error_to_string(err));
+            fprintf(stderr, "E1 %02lx: hl=%4lu l=%4lu - %s (%s)\n", identifier, data_offset, len, der_asn1_tag_to_string_map[l->tag], error_to_string(err));
 #endif
-         goto error;
-      } else if (len > (*inlen - id_len - len_len)) {
-         err = CRYPT_INVALID_PACKET;
+            goto error;
+         } else if (len > (*inlen - id_len - len_len)) {
+            err = CRYPT_INVALID_PACKET;
 #if defined(LTC_TEST_DBG)
-         fprintf(stderr, "E2 %02lx: hl=%4lu l=%4lu - %s (%s)\n", identifier, data_offset, len, der_asn1_tag_to_string_map[l->tag], error_to_string(err));
+            fprintf(stderr, "E2 %02lx: hl=%4lu l=%4lu - %s (%s)\n", identifier, data_offset, len, der_asn1_tag_to_string_map[l->tag], error_to_string(err));
 #endif
-         goto error;
-      }
-      data_offset = id_len + len_len;
+            goto error;
+         }
+         data_offset = id_len + len_len;
 #if defined(LTC_TEST_DBG) && LTC_TEST_DBG > 1
-      if (l->type == LTC_ASN1_CUSTOM_TYPE && l->class == LTC_ASN1_CL_CONTEXT_SPECIFIC) {
-         fprintf(stderr, "OK %02lx: hl=%4lu l=%4lu - Context Specific[%s %llu]\n", identifier, data_offset, len, der_asn1_pc_to_string_map[l->pc], l->tag);
-      } else {
-         fprintf(stderr, "OK %02lx: hl=%4lu l=%4lu - %s\n", identifier, data_offset, len, der_asn1_tag_to_string_map[l->tag]);
-      }
-#endif
-      len += data_offset;
-
-      if (l->type == LTC_ASN1_CUSTOM_TYPE) {
-         /* Custom type, use the 'used' field to store the original identifier */
-         l->used = identifier;
-         if (l->pc == LTC_ASN1_PC_CONSTRUCTED) {
-            /* treat constructed elements like SEQUENCEs */
-            identifier = 0x20;
+         if (l->type == LTC_ASN1_CUSTOM_TYPE && l->class == LTC_ASN1_CL_CONTEXT_SPECIFIC) {
+            fprintf(stderr, "OK %02lx: hl=%4lu l=%4lu - Context Specific[%s %llu]\n", identifier, data_offset, len, der_asn1_pc_to_string_map[l->pc], l->tag);
          } else {
-            /* primitive elements are treated as opaque data */
-            identifier = 0x80;
+            fprintf(stderr, "OK %02lx: hl=%4lu l=%4lu - %s\n", identifier, data_offset, len, der_asn1_tag_to_string_map[l->tag]);
+         }
+#endif
+         len += data_offset;
+
+         if (l->type == LTC_ASN1_CUSTOM_TYPE) {
+            /* Custom type, use the 'used' field to store the original identifier */
+            l->used = identifier;
+            if (l->pc == LTC_ASN1_PC_CONSTRUCTED) {
+               /* treat constructed elements like SEQUENCEs */
+               identifier = 0x20;
+            } else {
+               /* primitive elements are treated as opaque data */
+               identifier = 0x80;
+            }
          }
       }
 
@@ -432,8 +434,15 @@ int der_decode_sequence_flexi(const unsigned char *in, unsigned long *inlen, ltc
              *inlen -= data_offset;
              len    -= data_offset;
 
+             /* save the decoded ASN.1 len */
+             len_len = len;
+
              /* Sequence elements go as child */
              if ((err = der_decode_sequence_flexi(in, &len, &(l->child))) != CRYPT_OK) {
+                goto error;
+             }
+             if (len_len != len) {
+                err = CRYPT_PK_ASN1_ERROR;
                 goto error;
              }
 

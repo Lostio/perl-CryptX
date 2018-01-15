@@ -170,7 +170,9 @@ int der_length_sequence_ex(ltc_asn1_list *list, unsigned long inlen,
       goto LBL_ERR;
    }
 
-   if (payloadlen) *payloadlen = y;
+   if (payloadlen != NULL) {
+      *payloadlen = y;
+   }
 
    /* store size */
    *outlen = y + x + 1;

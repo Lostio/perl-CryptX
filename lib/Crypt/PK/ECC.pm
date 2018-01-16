@@ -600,6 +600,13 @@ sub verify_message {
   return $self->_verify($sig, $data_hash);
 }
 
+sub verify_message_thread {
+  my ($self, $sig, $data, $hash_name) = @_;
+  $hash_name ||= 'SHA1';
+  my $data_hash = digest_data($hash_name, $data);
+  return $self->_verify_thr_create($sig, $data_hash);
+}
+
 sub verify_message_rfc7518 {
   my ($self, $sig, $data, $hash_name) = @_;
   $hash_name ||= 'SHA1';

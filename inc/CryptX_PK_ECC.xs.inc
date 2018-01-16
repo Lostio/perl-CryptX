@@ -397,6 +397,7 @@ _verify_thr_join(Crypt::PK::ECC self)
         int* retval;
 
         if (verify_thread == NULL) croak("FATAL: _verify_thr_join called with no thread");
+        self->verify_thr = NULL;
         rv = pthread_join(*verify_thread,(void*)&retval);
         if (rv != 0) croak("FATAL: _verify_thr_join failed to join thread");
         RETVAL = *retval;

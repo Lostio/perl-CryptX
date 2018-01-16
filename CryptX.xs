@@ -231,6 +231,9 @@ typedef struct ecc_struct {             /* used by Crypt::PK::ECC */
   ecc_key key;
   ltc_ecc_set_type dp;
   int id;
+  pthread_t* verify_thr;
+  SV* signature_sv;
+  SV* message_sv;
 } *Crypt__PK__ECC;
 
 int str_add_leading_zero(char *str, int maxlen, int minlen) {
@@ -335,6 +338,33 @@ void _ecc_free_key(ecc_key *key, ltc_ecc_set_type *dp)
     key->type = -1;
     key->dp = NULL;
   }
+}
+
+#include <pthread.h>
+
+typedef struct _thr_struct {
+  const unsigned char *sig;
+  unsigned long siglen;
+  const unsigned char *hash;
+  unsigned long hashlen;
+  ecc_key *key;
+} thr_struct;
+
+void* _threaded_verify(void * args)
+{
+  thr_struct* verify_args = (thr_struct*) args;
+  int stat = 0, rv = 1;
+  int* retval;
+
+  Newxz(retval,1,int);
+
+  rv = ecc_verify_hash(verify_args->sig, verify_args->siglen, verify_args->hash, verify_args->hashlen, &stat, verify_args->key);
+
+  Safefree(args);
+
+  *retval = (rv != CRYPT_OK || stat != 1) ? 0 : 1;
+
+  pthread_exit((void*)retval);
 }
 
 MODULE = CryptX       PACKAGE = CryptX      PREFIX = CryptX_

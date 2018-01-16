@@ -9,6 +9,7 @@ _new()
         if (!RETVAL) croak("FATAL: Newz failed");
         RETVAL->pindex = find_prng("chacha20");
         RETVAL->key.type = -1;
+        RETVAL->verify_thr = NULL;
         ecc_dp_init(&RETVAL->dp);
         if (RETVAL->pindex == -1) {
           Safefree(RETVAL);
@@ -19,6 +20,8 @@ _new()
           Safefree(RETVAL);
           croak("FATAL: rng_make_prng failed: %s", error_to_string(rv));
         }
+        RETVAL->signature_sv = NULL;
+        RETVAL->message_sv = NULL;
     }
     OUTPUT:
         RETVAL
@@ -349,6 +352,58 @@ _sign(Crypt::PK::ECC self, SV * data)
     OUTPUT:
         RETVAL
 
+void
+_verify_thr_create(Crypt::PK::ECC self, SV * sig_orig, SV * data_orig)
+    CODE:
+        unsigned char *data_ptr=NULL;
+        STRLEN data_len=0;
+        unsigned char *sig_ptr=NULL;
+        STRLEN sig_len=0;
+        pthread_t *verify_thread;
+        thr_struct *thr_args;
+        int rv;
+        SV* data = newSVpv("", 0);
+        SV* sig = newSVpv("", 0);
+
+        sv_catsv(data, data_orig);
+        sv_catsv(sig, sig_orig);
+        self->signature_sv = sig;
+        self->message_sv = data;
+        SvREADONLY_on(sig);
+        SvREADONLY_on(data);
+
+        data_ptr = (unsigned char *)SvPVbyte(data, data_len);
+        sig_ptr = (unsigned char *)SvPVbyte(sig, sig_len);
+
+        Newxz(verify_thread,1,pthread_t);
+        Newxz(thr_args,1,thr_struct);
+
+        thr_args->sig = sig_ptr;
+        thr_args->siglen = (unsigned long)sig_len;
+        thr_args->hash = data_ptr;
+        thr_args->hashlen = (unsigned long)data_len;
+        thr_args->key = &self->key;
+
+        rv = pthread_create(verify_thread, NULL, _threaded_verify, thr_args);
+        if (rv != 0) croak("FATAL: _verify_thr failed to create thread");
+        self->verify_thr = verify_thread;
+
+int
+_verify_thr_join(Crypt::PK::ECC self)
+    CODE:
+    {
+        pthread_t *verify_thread = self->verify_thr;
+        int rv;
+        int* retval;
+
+        if (verify_thread == NULL) croak("FATAL: _verify_thr_join called with no thread");
+        rv = pthread_join(*verify_thread,(void*)&retval);
+        if (rv != 0) croak("FATAL: _verify_thr_join failed to join thread");
+        RETVAL = *retval;
+    }
+    OUTPUT:
+        RETVAL
+
 int
 _verify(Crypt::PK::ECC self, SV * sig, SV * data)
     ALIAS:
@@ -395,6 +450,13 @@ shared_secret(Crypt::PK::ECC self, Crypt::PK::ECC pubkey)
 void
 DESTROY(Crypt::PK::ECC self)
     CODE:
+        if (self->verify_thr != NULL) {
+          pthread_join(*(self->verify_thr),NULL);
+        }
         _ecc_free_key(&self->key, &self->dp);
+        sv_free(MUTABLE_SV(self->signature_sv));
+        sv_free(MUTABLE_SV(self->message_sv));
+        self->signature_sv = NULL;
+        self->message_sv = NULL;
         Safefree(self);
 
